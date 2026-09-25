@@ -1,0 +1,17 @@
+{
+  "name": "@aimarket/hephaestus-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Framework-free core for the HEPHAESTUS studio: live capability catalog, cost estimate, and blueprint-to-pipeline conversion.",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "type-check": "tsc --noEmit",
+    "check": "npm run type-check && npm run test"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.11"
+  }
+}

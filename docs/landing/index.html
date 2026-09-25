@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HEPHAESTUS — the forge</title>
+<meta name="description" content="The forge for the agent economy: compose AIMarket capability chains, estimate cost, run pipelines, keep a signed bill of materials with hop-level blame." />
+<link rel="canonical" href="https://forge.modelmarket.dev/" />
+<meta property="og:title" content="HEPHAESTUS — the forge" />
+<meta property="og:description" content="Price capability chains before you spend. Live studio at modelmarket.dev/studio." />
+<meta property="og:url" content="https://forge.modelmarket.dev/" />
+<meta property="og:image" content="https://raw.githubusercontent.com/alexar76/hephaestus/main/docs/screenshots/opens-on-a-real-chain.png" />
+<meta name="theme-color" content="#070b14" />
+<link href="fonts/fonts.css" rel="stylesheet" />
+<style>
+  :root {
+    --void: #070b14;
+    --panel: rgba(13, 20, 36, 0.72);
+    --ink: #e6edf8;
+    --muted: #8ba0c4;
+    --faint: #5c6f92;
+    --ember: #ffa94d;
+    --ember-hot: #ffcc66;
+    --seal: #ff6b4a;
+    --ok: #00ff88;
+    --line: rgba(120, 150, 200, 0.18);
+    --head: "Syne", system-ui, sans-serif;
+    --body: "IBM Plex Sans", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+    --max: 1120px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--body);
+    background:
+      radial-gradient(52vw 40vw at 82% 6%, rgba(255, 169, 77, 0.14), transparent 58%),
+      radial-gradient(42vw 34vw at 6% 92%, rgba(255, 107, 74, 0.08), transparent 52%),
+      linear-gradient(168deg, #050810, #0a1220 48%, #070b14);
+    -webkit-font-smoothing: antialiased;
+  }
+  .nebula {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: radial-gradient(ellipse at 50% 38%, transparent 42%, rgba(7, 11, 20, 0.78) 100%);
+  }
+  .wrap { position: relative; z-index: 2; max-width: var(--max); margin: 0 auto; padding: 0 22px 72px; }
+  nav {
+    position: sticky; top: 0; z-index: 40;
+    backdrop-filter: blur(14px);
+    background: linear-gradient(180deg, rgba(7, 11, 20, 0.92), rgba(7, 11, 20, 0.45));
+    border-bottom: 1px solid var(--line);
+    margin: 0 -22px; padding: 0 22px;
+  }
+  nav .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; min-height: 58px; }
+  .brand {
+    font-family: var(--head); letter-spacing: 0.2em; font-weight: 800;
+    text-decoration: none; color: var(--ink); font-size: 15px;
+  }
+  .brand span { color: var(--ember); }
+  .links { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
+  .links a {
+    color: var(--muted); text-decoration: none; font-size: 13px;
+    padding: 6px 0; transition: color 0.15s;
+  }
+  .links a:hover { color: var(--ember); }
+  .hero {
+    display: grid; grid-template-columns: minmax(0, 0.92fr) minmax(380px, 1.08fr);
+    gap: clamp(20px, 4vw, 44px); align-items: center;
+    padding: 48px 0 56px; min-height: 560px;
+  }
+  .kicker {
+    font: 600 11px/1 var(--body); letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ember); margin: 0 0 16px;
+  }
+  h1 {
+    font-family: var(--head); font-size: clamp(2.35rem, 6.2vw, 4.1rem); line-height: 0.96;
+    margin: 0 0 18px; letter-spacing: -0.02em;
+  }
+  h1 em { font-style: normal; color: var(--ember-hot); }
+  .lead { max-width: 36rem; color: var(--muted); font-size: 1.12rem; margin: 0 0 24px; line-height: 1.55; }
+  .pips { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 28px; }
+  .pip {
+    display: inline-flex; align-items: center; gap: 8px;
+    font: 600 11px/1 var(--mono); letter-spacing: 0.06em; color: var(--faint);
+    padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px;
+    background: rgba(13, 20, 36, 0.5);
+  }
+  .pip b { color: var(--ember); font-weight: 600; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 12px 20px; border-radius: 999px; text-decoration: none;
+    font-weight: 700; font-family: var(--head); letter-spacing: 0.04em;
+    font-size: 13px; transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #ffc266, #ff8c42);
+    color: #1a1006; box-shadow: 0 0 28px rgba(255, 169, 77, 0.28);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(255, 169, 77, 0.42); }
+  .btn-ghost { border: 1px solid var(--line); color: var(--ink); background: rgba(13, 20, 36, 0.35); }
+  .btn-ghost:hover { border-color: rgba(255, 169, 77, 0.45); color: var(--ember-hot); }
+  .stage {
+    position: relative; height: 520px; min-width: 0; isolation: isolate;
+    cursor: grab; touch-action: pan-y;
+  }
+  .stage:active { cursor: grabbing; }
+  .stage::after {
+    content: ""; position: absolute; inset: 10%; z-index: -1; pointer-events: none;
+    background: radial-gradient(circle, rgba(255, 169, 77, 0.14), rgba(255, 107, 74, 0.05) 42%, transparent 68%);
+    filter: blur(26px);
+  }
+  #chain-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+  .scene-label {
+    position: absolute; z-index: 2; padding: 8px 11px;
+    border: 1px solid rgba(255, 169, 77, 0.28); border-radius: 8px;
+    background: rgba(7, 11, 20, 0.72); backdrop-filter: blur(10px);
+    font: 500 9px/1.35 var(--mono); letter-spacing: 0.1em; color: var(--muted);
+    pointer-events: none;
+  }
+  .scene-label b { display: block; font-size: 11px; margin-bottom: 3px; color: var(--ember); }
+  .scene-label.ok b { color: var(--ok); }
+  .scene-label.a { top: 14%; right: 2%; }
+  .scene-label.b { bottom: 22%; left: 0; }
+  .scene-label.c { bottom: 10%; right: 5%; }
+  .hint {
+    position: absolute; left: 50%; bottom: 4%; transform: translateX(-50%);
+    font: 500 9px/1 var(--mono); letter-spacing: 0.14em; color: rgba(92, 111, 146, 0.65);
+    white-space: nowrap; pointer-events: none; text-transform: uppercase;
+  }
+  .section-head { margin: 56px 0 22px; }
+  .section-head h2 {
+    font-family: var(--head); font-size: clamp(1.35rem, 3vw, 1.75rem);
+    margin: 0 0 8px; letter-spacing: -0.01em;
+  }
+  .section-head p { margin: 0; color: var(--muted); max-width: 42rem; }
+  .grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  .card {
+    border: 1px solid var(--line); border-radius: 16px; padding: 20px 20px 18px;
+    background: var(--panel); backdrop-filter: blur(8px);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: rgba(255, 169, 77, 0.32); transform: translateY(-2px); }
+  .card .num {
+    font: 700 10px/1 var(--mono); letter-spacing: 0.14em; color: var(--ember);
+    margin-bottom: 10px; opacity: 0.85;
+  }
+  .card h3 { font-family: var(--head); font-size: 1.08rem; margin: 0 0 8px; }
+  .card p { margin: 0; color: var(--muted); font-size: 0.94rem; line-height: 1.5; }
+  .card code {
+    font-family: var(--mono); font-size: 0.88em; color: var(--ember-hot);
+    background: rgba(255, 169, 77, 0.08); padding: 2px 6px; border-radius: 4px;
+  }
+  .shot-wrap {
+    margin-top: 20px; border: 1px solid var(--line); border-radius: 18px;
+    overflow: hidden; background: rgba(13, 20, 36, 0.55);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  }
+  .shot-wrap img { display: block; width: 100%; height: auto; vertical-align: middle; }
+  .shot-cap {
+    padding: 12px 16px; font-size: 12px; color: var(--faint);
+    border-top: 1px solid var(--line);
+  }
+  .shot-cap a { color: var(--ember); }
+  .steps {
+    display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    margin-top: 8px;
+  }
+  .step {
+    padding: 16px; border-radius: 14px; border: 1px solid var(--line);
+    background: rgba(13, 20, 36, 0.4);
+  }
+  .step .n {
+    font: 700 11px/1 var(--mono); color: var(--ember); letter-spacing: 0.12em; margin-bottom: 8px;
+  }
+  .step h4 { font-family: var(--head); margin: 0 0 6px; font-size: 0.98rem; }
+  .step p { margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.45; }
+  footer {
+    margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--line);
+    color: var(--faint); font-size: 13px; line-height: 1.6;
+  }
+  footer a { color: var(--ember); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .foot-links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 14px; }
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; min-height: 0; padding-top: 28px; }
+    .stage { height: min(480px, 78vw); min-height: 340px; order: -1; margin-bottom: -8px; }
+    .scene-label { display: none; }
+  }
+  @media (max-width: 600px) {
+    .stage { height: 400px; margin: 0 -6px 8px; }
+    .pips { gap: 8px; }
+    .pip { font-size: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn-primary { box-shadow: none; }
+    .hint { display: none; }
+    .card:hover { transform: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="nebula" aria-hidden="true"></div>
+  <div class="wrap">
+    <nav>
+      <div class="row">
+        <a class="brand" href="https://forge.modelmarket.dev/"><span>HEP</span>HAESTUS</a>
+        <div class="links">
+          <a href="https://modelmarket.dev/studio/">Live studio</a>
+          <a href="https://github.com/alexar76/hephaestus">GitHub</a>
+          <a href="https://github.com/alexar76/hephaestus#documentation">Docs</a>
+          <a href="https://monitor.modelmarket.dev/">Alien Monitor</a>
+        </div>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div>
+        <p class="kicker">Ἥφαιστος · capability-chain forge</p>
+        <h1>Price it.<br>Run it.<br><em>Prove it.</em></h1>
+        <p class="lead">
+          Wire multi-hop graphs from the live signed AIMarket catalogue — see cost and latency
+          <strong>before</strong> you spend, execute through the Hub pipeline, and keep a signed
+          bill of materials with hop-level blame.
+        </p>
+        <div class="pips">
+          <span class="pip"><b>$0.0030</b> estimate</span>
+          <span class="pip"><b>2</b> hops</span>
+          <span class="pip"><b>tr_…</b> signed BoM</span>
+        </div>
+        <div class="cta">
+          <a class="btn btn-primary" href="https://modelmarket.dev/studio/">Open the forge</a>
+          <a class="btn btn-ghost" href="https://github.com/alexar76/hephaestus">GitHub</a>
+        </div>
+      </div>
+      <div class="stage" id="stage" aria-label="Animated capability chain — drag to parallax">
+        <canvas id="chain-canvas" aria-hidden="true"></canvas>
+        <div class="scene-label a"><b>ESTIMATE</b>$0.0030 · 2 hops</div>
+        <div class="scene-label b ok"><b>SIGNED</b>bill of materials</div>
+        <div class="scene-label c"><b>BLAME</b>hop-level fault</div>
+        <div class="hint">drag · live catalogue graph</div>
+      </div>
+    </section>
+
+    <div class="section-head">
+      <h2>What the forge does</h2>
+      <p>One capability at a time is easy. Chains are where cost, wiring, and receipts get messy — HEPHAESTUS is the studio for that.</p>
+    </div>
+    <div class="grid">
+      <article class="card">
+        <div class="num">01</div>
+        <h3>Estimate first</h3>
+        <p>Integer micro-dollar cost and a latency floor from the manifest — no guessing after the invoice.</p>
+      </article>
+      <article class="card">
+        <div class="num">02</div>
+        <h3><code>${hop.field}</code> threading</h3>
+        <p>Values flow between hops at run time; invalid graphs fail before you pay.</p>
+      </article>
+      <article class="card">
+        <div class="num">03</div>
+        <h3>Signed BoM</h3>
+        <p>Every run leaves a trace id, per-hop prices, and which hop is at fault when something breaks.</p>
+      </article>
+    </div>
+
+    <div class="section-head">
+      <h2>Inside the studio</h2>
+      <p>Opens on a real chain, already priced — catalogue, canvas, and checks in one surface (also embedded at <code>/studio</code> on the Hub).</p>
+    </div>
+    <div class="shot-wrap">
+      <img
+        src="https://raw.githubusercontent.com/alexar76/hephaestus/main/docs/screenshots/opens-on-a-real-chain.png"
+        alt="HEPHAESTUS studio: two-hop graph with priced estimate in the header"
+        width="920" height="520" loading="lazy"
+      />
+      <p class="shot-cap">Captured from live studio — priced estimate, wired hops, evidence-backed catalogue rows.
+        <a href="https://modelmarket.dev/studio/">Open live ↗</a></p>
+    </div>
+
+    <div class="section-head">
+      <h2>The loop</h2>
+      <p>Framework-free TypeScript core (<code>src/</code>) plus a React studio the Hub serves.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="n">01 · WIRE</div><h4>Compose</h4><p>Pick capabilities from the signed manifest; wizards start from goals, not ids.</p></div>
+      <div class="step"><div class="n">02 · ESTIMATE</div><h4>Price the graph</h4><p>See micro-USD total and hop count before opening a channel.</p></div>
+      <div class="step"><div class="n">03 · RUN</div><h4>Execute</h4><p>Pipeline invoke through the Hub; references resolve at run time.</p></div>
+      <div class="step"><div class="n">04 · PROVE</div><h4>Signed BoM</h4><p>Trace id, receipts, and hop-level blame — not a single red X over the chain.</p></div>
+    </div>
+
+    <footer>
+      <div class="foot-links">
+        <a href="https://forge.modelmarket.dev/">forge.modelmarket.dev</a>
+        <a href="https://modelmarket.dev/studio/">modelmarket.dev/studio</a>
+        <a href="https://github.com/alexar76/hephaestus">alexar76/hephaestus</a>
+        <a href="https://alexar76.github.io/hephaestus/">GitHub Pages</a>
+        <a href="https://modeldev.modelmarket.dev/">Ecosystem map</a>
+      </div>
+      <strong>forge.modelmarket.dev</strong> is HEPHAESTUS — the smith, not a scanner.
+      Studio ships inside the Hub image; this landing mirrors to GitHub Pages.
+    </footer>
+  </div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('chain-canvas');
+  const stage = document.getElementById('stage');
+  if (!canvas || !stage) return;
+  const ctx = canvas.getContext('2d');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W, H, dpr, t = 0;
+  const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
+  const nodes = [
+    { id: 'read', label: 'gauss.read', x: 0.22, y: 0.38, price: '$0.001' },
+    { id: 'verify', label: 'sortes.verify', x: 0.52, y: 0.58, price: '$0.001' },
+    { id: 'out', label: 'platon.oracle', x: 0.78, y: 0.32, price: '$0.002' },
+  ];
+  const edges = [[0, 1], [1, 2]];
+
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    W = canvas.width = stage.clientWidth * dpr;
+    H = canvas.height = stage.clientHeight * dpr;
+    canvas.style.width = stage.clientWidth + 'px';
+    canvas.style.height = stage.clientHeight + 'px';
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  function aim(cx, cy) {
+    mouse.tx = (cx / stage.clientWidth - 0.5) * 0.12;
+    mouse.ty = (cy / stage.clientHeight - 0.5) * 0.12;
+  }
+  stage.addEventListener('mousemove', e => aim(e.offsetX, e.offsetY));
+  stage.addEventListener('touchmove', e => {
+    if (e.touches[0]) aim(e.touches[0].clientX - stage.offsetLeft, e.touches[0].clientY - stage.offsetTop);
+  }, { passive: true });
+
+  function px(n) { return n.x * W + mouse.x * W * 0.08; }
+  function py(n) { return n.y * H + mouse.ty * H * 0.08; }
+
+  function draw() {
+    t += reduce ? 0 : 0.016;
+    mouse.x += (mouse.tx - mouse.x) * 0.06;
+    mouse.y += (mouse.ty - mouse.y) * 0.06;
+    ctx.clearRect(0, 0, W, H);
+
+    // grid
+    ctx.strokeStyle = 'rgba(120,150,200,0.06)';
+    ctx.lineWidth = 1;
+    const gs = 28 * dpr;
+    for (let x = 0; x < W; x += gs) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (let y = 0; y < H; y += gs) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+
+    // edges + flow
+    edges.forEach(([a, b], i) => {
+      const na = nodes[a], nb = nodes[b];
+      const x1 = px(na), y1 = py(na), x2 = px(nb), y2 = py(nb);
+      ctx.strokeStyle = 'rgba(255, 169, 77, 0.35)';
+      ctx.lineWidth = 2 * dpr;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2 - 24 * dpr;
+      ctx.quadraticCurveTo(mx, my, x2, y2);
+      ctx.stroke();
+      if (!reduce) {
+        const flow = (t * 0.35 + i * 0.33) % 1;
+        const tt = flow;
+        const qx = (1 - tt) * (1 - tt) * x1 + 2 * (1 - tt) * tt * mx + tt * tt * x2;
+        const qy = (1 - tt) * (1 - tt) * y1 + 2 * (1 - tt) * tt * my + tt * tt * y2;
+        ctx.fillStyle = '#ffa94d';
+        ctx.beginPath();
+        ctx.arc(qx, qy, 4 * dpr, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+
+    // nodes
+    nodes.forEach((n, i) => {
+      const x = px(n), y = py(n);
+      const pulse = reduce ? 1 : 1 + Math.sin(t * 1.4 + i) * 0.04;
+      const r = 36 * dpr * pulse;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r * 1.8);
+      g.addColorStop(0, 'rgba(255, 169, 77, 0.22)');
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, r * 1.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(13, 20, 36, 0.92)';
+      ctx.strokeStyle = 'rgba(255, 169, 77, 0.55)';
+      ctx.lineWidth = 1.5 * dpr;
+      const bw = 118 * dpr, bh = 44 * dpr;
+      roundRect(ctx, x - bw / 2, y - bh / 2, bw, bh, 10 * dpr);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffa94d';
+      ctx.font = `600 ${10 * dpr}px IBM Plex Mono, monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText(n.label, x, y - 4 * dpr);
+      ctx.fillStyle = '#8ba0c4';
+      ctx.font = `500 ${9 * dpr}px IBM Plex Mono, monospace`;
+      ctx.fillText(n.price, x, y + 12 * dpr);
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  function roundRect(c, x, y, w, h, r) {
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+
+  draw();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "runs": [
+    {
+      "label": "run1_weather_verify",
+      "traceId": "tr_5c7c868abea5",
+      "traceUrl": "/studio/trace/tr_5c7c868abea5",
+      "steps": [
+        "✓ gaia.weather.read@v1 · $0.0010",
+        "✓ gaia.verify@v1 · $0.0020"
+      ]
+    },
+    {
+      "label": "run2_platon_random",
+      "traceId": "tr_6f115c04caf7",
+      "traceUrl": "/studio/trace/tr_6f115c04caf7",
+      "steps": [
+        "✓ platon.random@v1 · $0.0040"
+      ]
+    }
+  ],
+  "errors": []
+}

@@ -9,8 +9,7 @@
     "noEmit": true,
     "skipLibCheck": true,
     "types": ["vitest/globals"],
-    "baseUrl": ".",
-    "paths": { "@/*": ["src/*"], "@core/*": ["src/*"] }
+    "paths": { "@/*": ["./src/*"], "@core/*": ["./src/*"] }
   },
   "include": ["src", "tests"]
 }

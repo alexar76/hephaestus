@@ -19,9 +19,11 @@ import { estimateBlueprint, formatEstimate } from '@core/estimate';
 import { toPipelineRequest, validateBlueprint } from '@core/blueprint';
 import { exampleBlueprint } from '@core/example';
 import type { Blueprint, BlueprintNode, Capability } from '@core/types';
+import type { CounterpartyPlan } from '@core/counterparty';
 
 import CapabilityNode, { type StudioFlowNode } from './CapabilityNode';
 import CanvasGuide from './CanvasGuide';
+import CounterpartyPanel from './CounterpartyPanel';
 import ConnectHint from './ConnectHint';
 import Inspector from './Inspector';
 import LangSwitch from './LangSwitch';
@@ -101,6 +103,12 @@ export default function App() {
   const [guideDismissed, setGuideDismissed] = useState(false);
   const [connectHintDismissed, setConnectHintDismissed] = useState(false);
   const [wizardsOpen, setWizardsOpen] = useState(false);
+  const [counterpartyOpen, setCounterpartyOpen] = useState(false);
+  const [counterpartyPlan, setCounterpartyPlan] = useState<CounterpartyPlan | null>(null);
+  const counterpartyRuns = useRef(new Map<string, CounterpartyPlan>());
+  const [counterpartyPaidRecord, setCounterpartyPaidRecord] = useState<{
+    plan: CounterpartyPlan; run: RunResult; at: number;
+  } | null>(null);
   /** Node sizes as React Flow measured them; see onNodesChange for why they are kept. */
   const [measured, setMeasured] = useState<
     Record<string, { width: number; height: number }>
@@ -478,6 +486,7 @@ export default function App() {
         <div className="actions">
           <Wizards
             capabilities={capabilities}
+            onCounterparty={() => setCounterpartyOpen(true)}
             forceOpen={wizardsOpen}
             onForceOpenHandled={() => setWizardsOpen(false)}
             onPick={(bp, note) => {
@@ -518,11 +527,43 @@ export default function App() {
           <button type="button" onClick={() => setPaidOpen(true)} disabled={!conversion.ok || running}>
             {t('paid_check')}
           </button>
+          {counterpartyPaidRecord && <button type="button" onClick={() => setCounterpartyOpen(true)}>{t('cp_report')}</button>}
         </div>
       </header>
 
+      <CounterpartyPanel open={counterpartyOpen} capabilities={capabilities}
+        onClose={() => setCounterpartyOpen(false)} onResult={setRun}
+        paidRecord={counterpartyPaidRecord}
+        onPaid={(plan) => {
+          if (!plan.blueprint) return;
+          setCounterpartyPlan(plan);
+          setBlueprint(adoptBlueprint(plan.blueprint));
+          setPaidOpen(true);
+        }}
+        onGraph={(bp, plan) => {
+          setCounterpartyPlan(plan);
+          setBlueprint(adoptBlueprint(bp));
+          setRun(null);
+          setSelectedId(null);
+          setExampleNote(t('cp_title'));
+          setGuideDismissed(true);
+          setView('canvas');
+        }} />
+
       <PaidRunPanel open={paidOpen} request={conversion.ok ? conversion.request : null}
-        onClose={() => setPaidOpen(false)} onResult={setRun} />
+        onPrepared={(quote, request) => {
+          if (!quote.run_id || !counterpartyPlan?.blueprint) return;
+          const expected = toPipelineRequest(counterpartyPlan.blueprint, capabilities);
+          if (expected.ok && JSON.stringify(expected.request.nodes) === JSON.stringify(request.nodes)) {
+            counterpartyRuns.current.set(quote.run_id, counterpartyPlan);
+          }
+        }}
+        onClose={() => { setPaidOpen(false); if (counterpartyPaidRecord) setCounterpartyOpen(true); }}
+        onResult={(result) => {
+          setRun(result);
+          const plan = result.trace_id ? counterpartyRuns.current.get(result.trace_id) : undefined;
+          if (plan) setCounterpartyPaidRecord({ plan, run: result, at: Date.now() });
+        }} />
 
       <div className="main">
         {(!narrow || view === 'catalogue') && (

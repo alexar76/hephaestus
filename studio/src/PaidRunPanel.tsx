@@ -11,8 +11,9 @@ import {
 const message = (error: unknown) => error instanceof Error ? error.message : String(error);
 const pause = () => new Promise((resolve) => setTimeout(resolve, 2000));
 
-export default function PaidRunPanel({ open, request, onClose, onResult }: {
+export default function PaidRunPanel({ open, request, onClose, onResult, onPrepared }: {
   open: boolean; request: PipelineRequest | null; onClose: () => void; onResult: (run: RunResult) => void;
+  onPrepared?: (quote: Preflight, request: PipelineRequest) => void;
 }) {
   const { t } = useI18n();
   const [quote, setQuote] = useState<Preflight | null>(null);
@@ -36,7 +37,7 @@ export default function PaidRunPanel({ open, request, onClose, onResult }: {
         if (alive) { setSession(saved); setRun(value); setQuote(null); setWallet(saved.wallet); }
       })
       : request ? paymentPreflight(request).then((value) => {
-        if (alive) { setQuote(value); setRun(null); setSession(null); }
+        if (alive) { setQuote(value); setRun(null); setSession(null); onPrepared?.(value, request); }
       }) : Promise.resolve();
     load.catch((e: unknown) => { if (alive) setError(message(e)); })
       .finally(() => { if (alive) setBusy(false); });
@@ -133,7 +134,9 @@ export default function PaidRunPanel({ open, request, onClose, onResult }: {
     try {
       localStorage.removeItem(SESSION_KEY);
       setSession(null); setRun(null); setQuote(null); setWallet(''); setBalance(null);
-      setQuote(await paymentPreflight(request));
+      const prepared = await paymentPreflight(request);
+      setQuote(prepared);
+      onPrepared?.(prepared, request);
     } catch (e) { setError(message(e)); }
     finally { setBusy(false); }
   };

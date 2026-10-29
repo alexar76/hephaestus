@@ -62,6 +62,11 @@ third-party sellers and a signed per-step bill. Ordinary **Run** remains usable
 without a payment source. See [wallet-funded runs](docs/paid-runs.md) for the
 payment flow, supported routes and recovery behavior.
 
+**Check a counterparty before payment** is available in Wizards: enter the company name
+and identifiers, review the SYMMARTYS checks and cost, then keep one report with source
+timestamps, identity candidates, original receipts and the signed run bill. Missing or
+failed checks remain visible. [Scenario guide (Russian)](docs/counterparty.ru.md).
+
 ---
 
 ## What it looks like

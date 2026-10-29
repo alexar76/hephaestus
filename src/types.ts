@@ -113,6 +113,8 @@ export interface PipelineRequestNode {
 export interface PipelineRequest {
   nodes: PipelineRequestNode[];
   channel_id?: string;
+  /** Continue independent checks after a failure; dependent steps remain skipped. */
+  continue_on_error?: boolean;
 }
 
 /** The executor caps a pipeline at sixteen nodes; the studio must not promise more. */

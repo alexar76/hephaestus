@@ -12,6 +12,7 @@ import { useI18n } from './i18n';
 interface Props {
   capabilities: Capability[];
   onPick: (blueprint: Blueprint, note: string) => void;
+  onCounterparty: () => void;
   forceOpen?: boolean;
   onForceOpenHandled?: () => void;
 }
@@ -19,6 +20,7 @@ interface Props {
 export default function Wizards({
   capabilities,
   onPick,
+  onCounterparty,
   forceOpen,
   onForceOpenHandled,
 }: Props) {
@@ -67,6 +69,15 @@ export default function Wizards({
       {open && (
         <div className="sheet" role="menu">
           <div className="head">{t('wizards_head')}</div>
+
+          <button type="button" className="wiz" role="menuitem" onClick={() => {
+            setOpen(false);
+            onCounterparty();
+          }}>
+            <div className="title">{t('cp_title')}</div>
+            <div className="goal">{t('cp_goal')}</div>
+            <div className="chain">SYMMARTYS · {t('cp_evidence')}</div>
+          </button>
 
           {plans.map((plan) => {
             if (!plan.available) {

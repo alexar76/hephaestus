@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { COUNTERPARTY_UI } from './counterpartyI18n';
 
 export const LANGS = ['en', 'ru', 'es', 'fr', 'zh'] as const;
 export type Lang = (typeof LANGS)[number];
@@ -192,8 +193,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const t = useCallback(
     (key: string, vars?: Record<string, string | number>) => {
-      const pack = (ui && ui[lang]) || (ui && ui.en) || FALLBACK_EN;
-      let s = pack[key] ?? ui?.en?.[key] ?? FALLBACK_EN[key] ?? key;
+      const pack = ui?.[lang];
+      let s = pack?.[key] ?? COUNTERPARTY_UI[lang]?.[key] ?? ui?.en?.[key] ??
+        COUNTERPARTY_UI.en?.[key] ?? FALLBACK_EN[key] ?? key;
       if (vars) {
         for (const [k, v] of Object.entries(vars)) {
           s = s.split(`{${k}}`).join(String(v));

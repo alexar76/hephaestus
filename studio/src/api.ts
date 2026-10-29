@@ -61,13 +61,16 @@ export async function fetchTrialQuota(): Promise<TrialQuota | null> {
 }
 
 export interface RunResult {
+  /** Returned only to this caller; raw facts are not stored in the public bill. */
+  step_results?: Record<string, { result: Record<string, unknown>; receipt?: unknown }>;
   trace_id?: string;
   trace_url?: string;
   bill_of_materials?: {
     total_usd?: number;
     duration_ms?: number;
+    signature?: unknown;
     steps?: { id?: string; capability_id?: string; success?: boolean; price_usd?: number | null;
-      status?: string; error?: string; tx_hash?: string }[];
+      status?: string; error?: string; tx_hash?: string; result_sha256?: string; receipt_nonce?: string | null }[];
     blame?: {
       at_fault?: { id?: string; capability_id?: string; status_code?: number } | null;
       /** The executor's own failure (no federation hub, hub unreachable): no provider is at fault. */

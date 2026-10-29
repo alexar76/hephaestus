@@ -17,3 +17,8 @@ export type { ExampleResult } from './example';
 export type { Estimate } from './estimate';
 export { WIZARDS, planWizard, planWizards } from './wizards';
 export type { Wizard, WizardRole, WizardPick, WizardPlan } from './wizards';
+export { planCounterparty, buildCounterpartyReport } from './counterparty';
+export type {
+  CounterpartyInput, CounterpartyCheck, CounterpartyPlan, CounterpartyRun,
+  ReportSource, ReportCheck, CounterpartyReport, CounterpartyReportPolicy,
+} from './counterparty';
